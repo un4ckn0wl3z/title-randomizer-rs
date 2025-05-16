@@ -1,0 +1,164 @@
+import { Button, VerticalBox, ComboBox, HorizontalBox, Slider, CheckBox, GroupBox } from "std-widgets.slint";
+
+ 
+export component AppWindow inherits Window {
+
+    in property <[string]> processes: [];
+    out property <bool> locked: false;
+    property <int> rand_length: 5;
+    property <string> target_process;
+    in property <string> version;
+
+    callback randomizer(string, int);
+    callback stop-randomizer();
+    callback visit-developer-github();
+
+    width: 350px;
+    height: 420px;
+    full-screen: false;
+    title: "TITLE RANDOMIZER v" + version;
+    icon: @image-url("../assets/matrix.png");
+
+    VerticalBox {
+
+        Text {
+            padding: 10px;
+            height: 30px;
+            width: 100%;
+            text: "WINDOWS TITLE RANDOMIZER";
+            font-weight: 900;
+            font-size: 20px;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+            stroke-style: outside;
+            stroke-width: 1px;
+            stroke: #0aee38;
+        }
+
+        Image {
+            source: @image-url("../assets/matrix.png");
+            width: 100%;
+            height: 100px;
+            image-fit: fill;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+
+        HorizontalBox {
+             Text {
+                text: "Target process: ";
+                font-size: 15px;
+                vertical-alignment: center;
+            }
+            ComboBox {
+                model: root.processes;
+                height: 30px;
+                current-index: 0;
+                enabled: !root.locked;
+                selected(current-value) => {
+                    root.target_process = current-value;
+                }
+            }
+        }
+        Rectangle {
+            height: 1px;
+            width: 100%;
+            background: #888;
+        }
+        HorizontalBox {
+            Text {
+                text: "Title lenght: ";
+                font-size: 15px;
+                vertical-alignment: center;
+
+            }
+            Slider {
+                minimum: 5;
+                maximum: 32;
+                height: 30px;
+                enabled: !root.locked;
+                changed(value) => {
+                    root.rand_length = value;
+                }
+            }
+            Text {
+                text: root.rand_length;
+                font-size: 15px;
+                vertical-alignment: center;
+
+            }
+        }
+        
+        Rectangle {
+            height: 1px;
+            width: 100%;
+            background: #888;
+        }
+        if !root.locked: TouchArea
+        {
+            Rectangle{
+                border-radius: 5px;
+                background: #000000;
+                width: 100%;
+                height: 50px;
+                Text {
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    text: "RANDOMIZE";
+                    font-size: 20px;
+                    color: #32ea04;
+            }
+            
+            }
+            clicked => {
+                root.locked = !root.locked;
+                root.randomizer(root.target_process, root.rand_length);
+                
+            }
+        }
+
+        if root.locked: TouchArea
+        {
+            Rectangle{
+                border-radius: 5px;
+                background: #000000;
+                width: 100%;
+                height: 50px;
+                Text {
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    text: "STOP";
+                    font-size: 20px;
+                    color: red;
+            }
+            
+            }
+            clicked => {
+                root.locked = !root.locked;
+                root.stop-randomizer();
+            }
+        }
+        HorizontalBox {
+            alignment: end;
+            TouchArea {
+                mouse-cursor: pointer;
+                clicked => {
+                    root.visit-developer-github();
+                }
+                Text {
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                text: "Developer: un4ckn0wl3z";
+                font-size: 12px;
+                stroke-style: outside;
+                stroke-width: 1px;
+                stroke: #0aee38;
+                
+            }
+            }
+
+        }
+
+
+    }
+}
