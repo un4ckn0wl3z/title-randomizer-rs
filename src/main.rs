@@ -12,7 +12,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 use std::{error::Error, rc::Rc};
-use windows_sys::Win32::Foundation::HWND;
 
 lazy_static! {
     static ref LLIB: Library = {
@@ -21,9 +20,11 @@ lazy_static! {
     };
 }
 // Type definitions for the DLL functions
-type FindProcessIdByNameRaw = unsafe extern "C" fn(*const u16) -> u32;
-type FindMainWindowByPID = unsafe extern "C" fn(u32) -> HWND;
-type SetRandomTitle = unsafe extern "C" fn(HWND, *const u16);
+// type FindProcessIdByNameRaw = unsafe extern "C" fn(*const u16) -> u32;
+// type FindMainWindowByPID = unsafe extern "C" fn(u32) -> HWND;
+// type SetRandomTitle = unsafe extern "C" fn(HWND, *const u16);
+type RenameWindowTitleFn =
+    unsafe extern "C" fn(target_process_name: *const u16, new_window_title: *const u16);
 
 const FULL_ASCII: &str = "!\x22#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\r";
 
@@ -33,11 +34,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let version = env!("CARGO_PKG_VERSION");
 
     // Load the functions
-    let find_process_id: Symbol<FindProcessIdByNameRaw> =
-        unsafe { LLIB.get(b"FindProcessIdByNameRaw")? };
-    let find_main_window: Symbol<FindMainWindowByPID> =
-        unsafe { LLIB.get(b"FindMainWindowByPID")? };
-    let set_random_title: Symbol<SetRandomTitle> = unsafe { LLIB.get(b"SetRandomTitle")? };
+    // let find_process_id: Symbol<FindProcessIdByNameRaw> =
+    //     unsafe { LLIB.get(b"FindProcessIdByNameRaw")? };
+    // let find_main_window: Symbol<FindMainWindowByPID> =
+    //     unsafe { LLIB.get(b"FindMainWindowByPID")? };
+    // let set_random_title: Symbol<SetRandomTitle> = unsafe { LLIB.get(b"SetRandomTitle")? };
+
+    let rename_windows_title: Symbol<RenameWindowTitleFn> =
+        unsafe { LLIB.get(b"RenameWindowTitleByProcessName")? };
 
     let running = Arc::new(AtomicBool::new(true));
     let flag = Arc::clone(&running);
@@ -61,29 +65,30 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .encode_wide()
                 .chain(std::iter::once(0)) // Null-terminate
                 .collect();
-            let pid = unsafe { find_process_id(process_name_w.as_ptr()) };
+            // let pid = unsafe { find_process_id(process_name_w.as_ptr()) };
 
-            if pid == 0 {
-                return;
-            }
+            // if pid == 0 {
+            //     return;
+            // }
 
-            let hwnd = unsafe { find_main_window(pid) };
-            if hwnd.is_null() {
-                return;
-            }
+            // let hwnd = unsafe { find_main_window(pid) };
+            // if hwnd.is_null() {
+            //     return;
+            // }
             // Cast HWND to isize for thread safety
-            let hwnd_val = hwnd as isize;
-            let set_random_title = set_random_title.clone();
+            // let hwnd_val = hwnd as isize;
+            let rename_windows_title = rename_windows_title.clone();
             let flag = flag.clone();
             thread::spawn(move || {
                 while flag.load(Ordering::Relaxed) {
-                    let hwnd = hwnd_val as HWND;
+                    // let hwnd = hwnd_val as HWND;
                     let new_title = generate(title_len, FULL_ASCII);
                     let new_title_w: Vec<u16> = OsStr::new(new_title.as_str())
                         .encode_wide()
                         .chain(std::iter::once(0)) // Null-terminate
                         .collect();
-                    unsafe { set_random_title(hwnd, new_title_w.as_ptr()) };
+                    // unsafe { set_random_title(hwnd, new_title_w.as_ptr()) };
+                    unsafe { rename_windows_title(process_name_w.as_ptr(), new_title_w.as_ptr()) };
                     thread::sleep(std::time::Duration::from_millis(100));
                 }
             });

@@ -6,3 +6,8 @@
 #include <tlhelp32.h>
 #include <string>
 #include <iostream>
+#include <psapi.h>
+#include <string.h>
+#include <tchar.h>
+
+#define DLL_EXPORT __declspec(dllexport)
