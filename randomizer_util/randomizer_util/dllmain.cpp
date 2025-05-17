@@ -46,8 +46,6 @@ extern "C" DLL_EXPORT void RenameWindowTitleByProcessName(const TCHAR * targetPr
     EnumWindows(EnumWindowsProc, (LPARAM)combinedData);
 }
 
-// -----------------------------------------------------------------------
-
 DWORD FindProcessIdByName(const std::wstring& processName) {
     DWORD pid = 0;
     HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
