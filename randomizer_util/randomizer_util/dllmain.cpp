@@ -65,11 +65,11 @@ DWORD FindProcessIdByName(const std::wstring& processName) {
     return pid;
 }
 
-extern "C" __declspec(dllexport) DWORD FindProcessIdByNameRaw(LPCWSTR processName) {
+extern "C" DLL_EXPORT DWORD FindProcessIdByNameRaw(LPCWSTR processName) {
     return FindProcessIdByName(std::wstring(processName));
 }
 
-extern "C" __declspec(dllexport) HWND FindMainWindowByPID(DWORD pid) {
+extern "C" DLL_EXPORT HWND FindMainWindowByPID(DWORD pid) {
     struct HandleData {
         DWORD pid;
         HWND hwnd;
@@ -91,7 +91,7 @@ extern "C" __declspec(dllexport) HWND FindMainWindowByPID(DWORD pid) {
 }
 
 
-extern "C" __declspec(dllexport) VOID SetRandomTitle(
+extern "C" DLL_EXPORT VOID SetRandomTitle(
     _In_ HWND hWnd,
     _In_opt_ LPCWSTR lpString) {
     SetWindowTextW(hWnd, lpString);
